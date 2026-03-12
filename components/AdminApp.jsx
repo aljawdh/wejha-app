@@ -1,5 +1,15 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { 
+  getRealDashboardStats, 
+  getCategories, 
+  createCategory, 
+  updateCategory, 
+  deleteCategory,
+  getMerchants,
+  updateMerchantStatus,
+  getDeals
+} from '../lib/supabase-admin'
 
 // ============================================================================
 // Admin Dashboard Configuration & Constants
@@ -14,7 +24,7 @@ const ADMIN_CONFIG = {
     support: { name: 'دعم فني', nameEn: 'Support', permissions: ['complaints', 'users'] }
   },
   defaultCurrency: 'QAR',
-  dashboardRefreshInterval: 30000, // 30 seconds
+  dashboardRefreshInterval: 30000,
   maxItemsPerPage: 20
 }
 
@@ -116,113 +126,118 @@ function getStatusText(status, language = 'ar') {
 }
 
 // ============================================================================
-// Mock API Functions (replace with actual API calls)
+// Real API Functions - Connected to Supabase
 // ============================================================================
 
 async function fetchDashboardStats() {
-  // Simulate API call
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({
-        merchants: { total: 156, active: 142, pending: 14 },
-        deals: { total: 89, active: 67 },
-        coupons: { total: 1247, used: 834, usageRate: 66.9 },
-        revenue: { total: 45678.50, commission: 4567.85, merchant: 41110.65 }
-      })
-    }, 1000)
-  })
+  try {
+    console.log('📊 Loading dashboard stats from database...')
+    const result = await getRealDashboardStats()
+    if (result.error) {
+      console.error('Stats error:', result.error)
+      return {
+        merchants: { total: 0, active: 0, pending: 0 },
+        deals: { total: 0, active: 0 },
+        coupons: { total: 0, used: 0, usageRate: 0 },
+        revenue: { total: 0, commission: 0, merchant: 0 }
+      }
+    }
+    console.log('✅ Dashboard stats loaded successfully')
+    return result.data
+  } catch (error) {
+    console.error('Failed to fetch stats:', error)
+    return {
+      merchants: { total: 0, active: 0, pending: 0 },
+      deals: { total: 0, active: 0 },
+      coupons: { total: 0, used: 0, usageRate: 0 },
+      revenue: { total: 0, commission: 0, merchant: 0 }
+    }
+  }
 }
 
 async function fetchMerchants(filters = {}) {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: 1,
-          name: 'مطعم الدوحة الملكي',
-          nameEn: 'Royal Doha Restaurant',
-          email: 'royal@qreeb.qa',
-          phone: '+97450000001',
-          status: 'active',
-          verificationStatus: 'verified',
-          city: 'الدوحة',
-          category: 'مطاعم',
-          rating: 4.7,
-          dealsCount: 5,
-          revenue: 12456.78,
-          joinedDate: '2024-01-15',
-          lastActive: '2024-03-10T14:30:00Z'
-        },
-        {
-          id: 2,
-          name: 'مقهى الكورنيش',
-          nameEn: 'Corniche Cafe',
-          email: 'corniche@qreeb.qa',
-          phone: '+97450000002',
-          status: 'pending',
-          verificationStatus: 'pending',
-          city: 'الدوحة',
-          category: 'مقاهي',
-          rating: 0,
-          dealsCount: 0,
-          revenue: 0,
-          joinedDate: '2024-03-12',
-          lastActive: '2024-03-12T09:15:00Z'
-        }
-      ])
-    }, 800)
-  })
+  try {
+    console.log('🏪 Loading merchants from database...')
+    const result = await getMerchants()
+    if (result.error) {
+      console.error('Merchants error:', result.error)
+      return []
+    }
+    console.log('✅ Merchants loaded successfully:', result.data.length)
+    return result.data
+  } catch (error) {
+    console.error('Failed to fetch merchants:', error)
+    return []
+  }
 }
 
 async function fetchDeals(filters = {}) {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve([
-        {
-          id: 1,
-          title: 'برجر شيف + بطاطس + مشروب',
-          titleEn: 'Chef Burger + Fries + Drink',
-          merchant: 'مطعم الدوحة الملكي',
-          category: 'مطاعم',
-          originalPrice: 45.00,
-          finalPrice: 31.50,
-          discountPercent: 30,
-          maxCoupons: 100,
-          remainingCoupons: 73,
-          claimsCount: 27,
-          isActive: true,
-          isFeatured: true,
-          expiresAt: '2024-04-15T23:59:59Z',
-          createdAt: '2024-03-01T10:00:00Z'
-        },
-        {
-          id: 2,
-          title: 'قهوة تركية + حلويات',
-          titleEn: 'Turkish Coffee + Sweets',
-          merchant: 'مقهى الكورنيش',
-          category: 'مقاهي',
-          originalPrice: 25.00,
-          finalPrice: 18.75,
-          discountPercent: 25,
-          maxCoupons: 50,
-          remainingCoupons: 50,
-          claimsCount: 0,
-          isActive: false,
-          isFeatured: false,
-          expiresAt: '2024-04-30T23:59:59Z',
-          createdAt: '2024-03-12T14:20:00Z'
-        }
-      ])
-    }, 600)
-  })
+  try {
+    console.log('🎯 Loading deals from database...')
+    const result = await getDeals()
+    if (result.error) {
+      console.error('Deals error:', result.error)
+      return []
+    }
+    console.log('✅ Deals loaded successfully:', result.data.length)
+    return result.data
+  } catch (error) {
+    console.error('Failed to fetch deals:', error)
+    return []
+  }
 }
 
-async function updateMerchantStatus(merchantId, status, verificationStatus) {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve({ success: true, message: 'تم تحديث حالة التاجر بنجاح' })
-    }, 500)
-  })
+async function updateMerchantStatusAction(merchantId, status, verificationStatus) {
+  try {
+    console.log(`🔄 Updating merchant ${merchantId} status to: ${status}`)
+    const result = await updateMerchantStatus(merchantId, status, verificationStatus)
+    if (result.error) {
+      console.error('Update merchant error:', result.error)
+      return { success: false, message: result.error }
+    }
+    console.log('✅ Merchant status updated successfully')
+    return { success: true, message: 'تم تحديث حالة التاجر بنجاح' }
+  } catch (error) {
+    console.error('Failed to update merchant:', error)
+    return { success: false, message: 'فشل في تحديث حالة التاجر' }
+  }
+}
+
+// ============================================================================
+// Category Management Functions
+// ============================================================================
+
+async function handleCategoryAction(action, categoryData = null) {
+  try {
+    console.log(`📝 Category action: ${action}`, categoryData)
+    let result;
+    
+    switch(action) {
+      case 'create':
+        result = await createCategory(categoryData)
+        break;
+      case 'update':
+        result = await updateCategory(categoryData.id, categoryData)
+        break;
+      case 'delete':
+        result = await deleteCategory(categoryData.id)
+        break;
+      default:
+        throw new Error('Invalid category action')
+    }
+    
+    if (result.error) {
+      console.error('Category action error:', result.error)
+      return { success: false, message: result.error }
+    }
+    
+    console.log('✅ Category action completed successfully')
+    return { success: true, message: 'تم تحديث الفئة بنجاح' }
+    
+  } catch (error) {
+    console.error('Category action failed:', error)
+    return { success: false, message: 'فشل في تحديث الفئة' }
+  }
 }
 
 // ============================================================================
@@ -239,7 +254,6 @@ function StatCard({ title, value, subtitle, icon, color = THEME.colors.primary, 
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Background Pattern */}
       <div style={{
         position: 'absolute',
         top: -10,
@@ -357,7 +371,6 @@ function DataTable({ columns, data, loading, onAction, language = 'ar' }) {
       border: `1px solid ${THEME.colors.border}`,
       overflow: 'hidden'
     }}>
-      {/* Table Header */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: columns.map(col => col.width || '1fr').join(' '),
@@ -376,7 +389,6 @@ function DataTable({ columns, data, loading, onAction, language = 'ar' }) {
         ))}
       </div>
 
-      {/* Table Body */}
       <div>
         {data.map((row, index) => (
           <div
@@ -447,26 +459,16 @@ function AdminDashboard({ language = 'ar' }) {
   const [stats, setStats] = useState(null)
   const [merchants, setMerchants] = useState([])
   const [deals, setDeals] = useState([])
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState({
     stats: true,
     merchants: false,
-    deals: false
+    deals: false,
+    categories: false
   })
 
   // Load dashboard stats
   useEffect(() => {
-    async function loadStats() {
-      try {
-        setLoading(prev => ({ ...prev, stats: true }))
-        const data = await fetchDashboardStats()
-        setStats(data)
-      } catch (error) {
-        console.error('Failed to load stats:', error)
-      } finally {
-        setLoading(prev => ({ ...prev, stats: false }))
-      }
-    }
-
     loadStats()
   }, [])
 
@@ -483,6 +485,25 @@ function AdminDashboard({ language = 'ar' }) {
       loadDeals()
     }
   }, [activeTab])
+
+  // Load categories when tab is active
+  useEffect(() => {
+    if (activeTab === 'categories') {
+      loadCategories()
+    }
+  }, [activeTab])
+
+  const loadStats = async () => {
+    try {
+      setLoading(prev => ({ ...prev, stats: true }))
+      const data = await fetchDashboardStats()
+      setStats(data)
+    } catch (error) {
+      console.error('Failed to load stats:', error)
+    } finally {
+      setLoading(prev => ({ ...prev, stats: false }))
+    }
+  }
 
   const loadMerchants = async () => {
     try {
@@ -508,12 +529,52 @@ function AdminDashboard({ language = 'ar' }) {
     }
   }
 
+  const loadCategories = async () => {
+    try {
+      setLoading(prev => ({ ...prev, categories: true }))
+      const result = await getCategories()
+      if (result.error) {
+        console.error('Categories error:', result.error)
+      } else {
+        setCategories(result.data)
+        console.log('✅ Categories loaded:', result.data.length)
+      }
+    } catch (error) {
+      console.error('Failed to load categories:', error)
+    } finally {
+      setLoading(prev => ({ ...prev, categories: false }))
+    }
+  }
+
   const handleMerchantAction = async (merchantId, action) => {
     try {
-      await updateMerchantStatus(merchantId, action)
-      loadMerchants() // Refresh data
+      const result = await updateMerchantStatusAction(merchantId, action)
+      if (result.success) {
+        alert('✅ ' + result.message)
+        loadMerchants() // Refresh data
+        loadStats() // Refresh stats
+      } else {
+        alert('❌ ' + result.message)
+      }
     } catch (error) {
       console.error('Failed to update merchant:', error)
+      alert('❌ فشل في تحديث التاجر')
+    }
+  }
+
+  const handleCategoryUpdate = async (action, categoryData) => {
+    try {
+      const result = await handleCategoryAction(action, categoryData)
+      if (result.success) {
+        alert('✅ ' + result.message)
+        loadCategories() // Refresh categories
+        loadStats() // Refresh stats
+      } else {
+        alert('❌ ' + result.message)
+      }
+    } catch (error) {
+      console.error('Failed to update category:', error)
+      alert('❌ فشل في تحديث الفئة')
     }
   }
 
@@ -524,7 +585,7 @@ function AdminDashboard({ language = 'ar' }) {
       title: language === 'ar' ? 'اسم التاجر' : 'Merchant Name',
       render: (value, row) => (
         <div>
-          <div style={{ fontWeight: 600 }}>{language === 'ar' ? row.name : row.nameEn}</div>
+          <div style={{ fontWeight: 600 }}>{language === 'ar' ? row.name : row.name_en}</div>
           <div style={{ fontSize: 11, color: THEME.colors.textMuted }}>{row.email}</div>
         </div>
       )
@@ -532,7 +593,8 @@ function AdminDashboard({ language = 'ar' }) {
     {
       key: 'category',
       title: language === 'ar' ? 'الفئة' : 'Category',
-      width: '120px'
+      width: '120px',
+      render: (value, row) => row.categories?.name || 'غير محدد'
     },
     {
       key: 'status',
@@ -544,13 +606,13 @@ function AdminDashboard({ language = 'ar' }) {
       key: 'verification',
       title: language === 'ar' ? 'التحقق' : 'Verification',
       width: '100px',
-      render: (value, row) => <StatusBadge status={row.verificationStatus} language={language} />
+      render: (value, row) => <StatusBadge status={row.verification_status || 'unverified'} language={language} />
     },
     {
       key: 'revenue',
       title: language === 'ar' ? 'الإيرادات' : 'Revenue',
       width: '120px',
-      render: (value) => formatCurrency(value),
+      render: (value) => formatCurrency(value || 0),
       align: 'center'
     },
     {
@@ -615,76 +677,107 @@ function AdminDashboard({ language = 'ar' }) {
     }
   ]
 
-  // Deals table columns
+  // Categories table columns
+  const categoryColumns = [
+    {
+      key: 'name',
+      title: language === 'ar' ? 'اسم الفئة' : 'Category Name',
+      render: (value, row) => (
+        <div>
+          <div style={{ fontWeight: 600 }}>{language === 'ar' ? (row.name_ar || row.name) : (row.name_en || row.name)}</div>
+          <div style={{ fontSize: 11, color: THEME.colors.textMuted }}>{row.description || 'بدون وصف'}</div>
+        </div>
+      )
+    },
+    {
+      key: 'created_at',
+      title: language === 'ar' ? 'تاريخ الإنشاء' : 'Created',
+      width: '140px',
+      render: (value) => formatDate(value, language)
+    },
+    {
+      key: 'is_featured',
+      title: language === 'ar' ? 'مميز' : 'Featured',
+      width: '80px',
+      render: (value) => value ? '⭐' : ''
+    },
+    {
+      key: 'actions',
+      title: language === 'ar' ? 'إجراءات' : 'Actions',
+      width: '140px',
+      render: (value, row) => (
+        <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+          <button
+            className="tap"
+            onClick={() => {
+              const newName = prompt('اسم الفئة الجديد:', row.name)
+              if (newName && newName !== row.name) {
+                handleCategoryUpdate('update', { id: row.id, name: newName })
+              }
+            }}
+            style={{
+              padding: '4px 8px',
+              borderRadius: THEME.radius.sm,
+              border: 'none',
+              background: THEME.colors.info,
+              color: 'white',
+              fontSize: 10,
+              cursor: 'pointer'
+            }}
+          >
+            ✏️ {language === 'ar' ? 'تعديل' : 'Edit'}
+          </button>
+          <button
+            className="tap"
+            onClick={() => {
+              if (confirm('هل أنت متأكد من حذف هذه الفئة؟')) {
+                handleCategoryUpdate('delete', { id: row.id })
+              }
+            }}
+            style={{
+              padding: '4px 8px',
+              borderRadius: THEME.radius.sm,
+              border: 'none',
+              background: THEME.colors.error,
+              color: 'white',
+              fontSize: 10,
+              cursor: 'pointer'
+            }}
+          >
+            🗑️ {language === 'ar' ? 'حذف' : 'Delete'}
+          </button>
+        </div>
+      )
+    }
+  ]
+
+  // Deals table columns (simplified for space)
   const dealColumns = [
     {
       key: 'title',
       title: language === 'ar' ? 'العرض' : 'Deal',
       render: (value, row) => (
         <div>
-          <div style={{ fontWeight: 600 }}>{language === 'ar' ? row.title : row.titleEn}</div>
-          <div style={{ fontSize: 11, color: THEME.colors.textMuted }}>{row.merchant}</div>
+          <div style={{ fontWeight: 600 }}>{language === 'ar' ? (row.title_ar || row.title) : (row.title_en || row.title)}</div>
+          <div style={{ fontSize: 11, color: THEME.colors.textMuted }}>{row.merchants?.name || 'غير محدد'}</div>
         </div>
       )
-    },
-    {
-      key: 'price',
-      title: language === 'ar' ? 'السعر' : 'Price',
-      width: '140px',
-      render: (value, row) => (
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ textDecoration: 'line-through', color: THEME.colors.textMuted, fontSize: 11 }}>
-            {formatCurrency(row.originalPrice)}
-          </div>
-          <div style={{ fontWeight: 700, color: THEME.colors.success }}>
-            {formatCurrency(row.finalPrice)}
-          </div>
-          <div style={{ fontSize: 10, color: THEME.colors.primary }}>
-            {row.discountPercent}% {language === 'ar' ? 'خصم' : 'off'}
-          </div>
-        </div>
-      ),
-      align: 'center'
-    },
-    {
-      key: 'availability',
-      title: language === 'ar' ? 'التوفر' : 'Availability',
-      width: '120px',
-      render: (value, row) => (
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ fontWeight: 600 }}>{row.remainingCoupons}/{row.maxCoupons}</div>
-          <div style={{ fontSize: 10, color: THEME.colors.textMuted }}>
-            {language === 'ar' ? 'كوبون متبقي' : 'remaining'}
-          </div>
-        </div>
-      ),
-      align: 'center'
     },
     {
       key: 'status',
       title: language === 'ar' ? 'الحالة' : 'Status',
       width: '100px',
-      render: (value, row) => <StatusBadge status={row.isActive ? 'active' : 'inactive'} language={language} />
-    },
-    {
-      key: 'expires',
-      title: language === 'ar' ? 'ينتهي في' : 'Expires',
-      width: '120px',
-      render: (value, row) => (
-        <div style={{ fontSize: 11, color: THEME.colors.textMuted }}>
-          {formatDate(row.expiresAt, language)}
-        </div>
-      )
+      render: (value, row) => <StatusBadge status={row.is_active ? 'active' : 'inactive'} language={language} />
     }
   ]
 
   const navigationTabs = [
     { id: 'dashboard', label: language === 'ar' ? 'لوحة التحكم' : 'Dashboard', icon: '📊' },
+    { id: 'categories', label: language === 'ar' ? 'أقسام التطبيق' : 'Categories', icon: '📂' },
     { id: 'merchants', label: language === 'ar' ? 'التجار' : 'Merchants', icon: '🏪' },
     { id: 'deals', label: language === 'ar' ? 'العروض' : 'Deals', icon: '🎯' },
     { id: 'coupons', label: language === 'ar' ? 'الكوبونات' : 'Coupons', icon: '🎫' },
-    { id: 'finance', label: language === 'ar' ? 'المالية' : 'Finance', icon: '💰' },
-    { id: 'settings', label: language === 'ar' ? 'الإعدادات' : 'Settings', icon: '⚙️' }
+    { id: 'finance', label: language === 'ar' ? 'المالية' : 'Finance', icon: '💰' }
   ]
 
   return (
@@ -707,7 +800,6 @@ function AdminDashboard({ language = 'ar' }) {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 36,
@@ -728,7 +820,7 @@ function AdminDashboard({ language = 'ar' }) {
                 margin: 0,
                 fontFamily: "'Tajawal', sans-serif"
               }}>
-                {language === 'ar' ? 'لوحة تحكم قريب' : 'Qreeb Admin'}
+                {language === 'ar' ? 'لوحة تحكم وِجهة' : 'Wejha Admin'}
               </h1>
               <p style={{
                 fontSize: 11,
@@ -740,9 +832,14 @@ function AdminDashboard({ language = 'ar' }) {
             </div>
           </div>
 
-          {/* Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button
+              onClick={() => {
+                loadStats()
+                loadCategories()
+                loadMerchants()
+                loadDeals()
+              }}
               style={{
                 padding: '8px 16px',
                 borderRadius: THEME.radius.md,
@@ -771,7 +868,7 @@ function AdminDashboard({ language = 'ar' }) {
               fontWeight: 700,
               fontSize: 12
             }}>
-              ق
+              و
             </div>
           </div>
         </div>
@@ -809,16 +906,6 @@ function AdminDashboard({ language = 'ar' }) {
                 textAlign: 'right',
                 transition: 'all 0.2s'
               }}
-              onMouseEnter={(e) => {
-                if (activeTab !== tab.id) {
-                  e.target.style.background = THEME.colors.card
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== tab.id) {
-                  e.target.style.background = 'none'
-                }
-              }}
             >
               <span style={{ fontSize: 16 }}>{tab.icon}</span>
               <span style={{ flex: 1 }}>{tab.label}</span>
@@ -840,7 +927,6 @@ function AdminDashboard({ language = 'ar' }) {
                 {language === 'ar' ? 'نظرة عامة' : 'Overview'}
               </h2>
 
-              {/* Stats Grid */}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
@@ -883,72 +969,56 @@ function AdminDashboard({ language = 'ar' }) {
                   trend={{ value: '+22%', isPositive: true }}
                 />
               </div>
+            </div>
+          )}
 
-              {/* Quick Actions */}
+          {/* Categories Tab */}
+          {activeTab === 'categories' && (
+            <div>
               <div style={{
-                background: THEME.colors.surface,
-                borderRadius: THEME.radius.lg,
-                padding: '20px',
-                border: `1px solid ${THEME.colors.border}`
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: 20
               }}>
-                <h3 style={{
-                  fontSize: 16,
-                  fontWeight: 700,
-                  marginBottom: 16,
-                  color: THEME.colors.text
+                <h2 style={{
+                  fontSize: 20,
+                  fontWeight: 800,
+                  margin: 0,
+                  fontFamily: "'Tajawal', sans-serif"
                 }}>
-                  {language === 'ar' ? 'إجراءات سريعة' : 'Quick Actions'}
-                </h3>
+                  {language === 'ar' ? 'إدارة أقسام التطبيق' : 'Categories Management'}
+                </h2>
 
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                  gap: '12px'
-                }}>
-                  {[
-                    { label: language === 'ar' ? 'موافقة على التجار' : 'Approve Merchants', icon: '✅', badge: '14' },
-                    { label: language === 'ar' ? 'مراجعة العروض' : 'Review Deals', icon: '📋', badge: '7' },
-                    { label: language === 'ar' ? 'معالجة المدفوعات' : 'Process Payments', icon: '💳', badge: '23' },
-                    { label: language === 'ar' ? 'دعم العملاء' : 'Customer Support', icon: '💬', badge: '5' }
-                  ].map((action, index) => (
-                    <button
-                      key={index}
-                      className="tap lift"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '12px 16px',
-                        borderRadius: THEME.radius.md,
-                        border: `1px solid ${THEME.colors.border}`,
-                        background: THEME.colors.card,
-                        color: THEME.colors.text,
-                        cursor: 'pointer',
-                        fontSize: 12,
-                        fontWeight: 600,
-                        transition: 'all 0.18s'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 16 }}>{action.icon}</span>
-                        <span>{action.label}</span>
-                      </div>
-                      <div style={{
-                        background: THEME.colors.primary,
-                        color: 'white',
-                        borderRadius: '12px',
-                        padding: '2px 6px',
-                        fontSize: 10,
-                        fontWeight: 700,
-                        minWidth: '20px',
-                        textAlign: 'center'
-                      }}>
-                        {action.badge}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <button
+                  className="tap"
+                  onClick={() => {
+                    const name = prompt('اسم الفئة الجديدة:')
+                    if (name) {
+                      handleCategoryUpdate('create', { name, description: '' })
+                    }
+                  }}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: THEME.radius.md,
+                    border: 'none',
+                    background: THEME.gradients.primary,
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: 600
+                  }}
+                >
+                  + {language === 'ar' ? 'إضافة قسم' : 'Add Category'}
+                </button>
               </div>
+
+              <DataTable
+                columns={categoryColumns}
+                data={categories}
+                loading={loading.categories}
+                language={language}
+              />
             </div>
           )}
 
@@ -969,39 +1039,6 @@ function AdminDashboard({ language = 'ar' }) {
                 }}>
                   {language === 'ar' ? 'إدارة التجار' : 'Merchant Management'}
                 </h2>
-
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button
-                    className="tap"
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: THEME.radius.md,
-                      border: `1px solid ${THEME.colors.border}`,
-                      background: 'none',
-                      color: THEME.colors.text,
-                      cursor: 'pointer',
-                      fontSize: 12
-                    }}
-                  >
-                    🔍 {language === 'ar' ? 'بحث' : 'Search'}
-                  </button>
-                  
-                  <button
-                    className="tap"
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: THEME.radius.md,
-                      border: 'none',
-                      background: THEME.gradients.primary,
-                      color: 'white',
-                      cursor: 'pointer',
-                      fontSize: 12,
-                      fontWeight: 600
-                    }}
-                  >
-                    + {language === 'ar' ? 'تاجر جديد' : 'New Merchant'}
-                  </button>
-                </div>
               </div>
 
               <DataTable
@@ -1031,23 +1068,6 @@ function AdminDashboard({ language = 'ar' }) {
                 }}>
                   {language === 'ar' ? 'إدارة العروض' : 'Deal Management'}
                 </h2>
-
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button
-                    className="tap"
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: THEME.radius.md,
-                      border: `1px solid ${THEME.colors.border}`,
-                      background: 'none',
-                      color: THEME.colors.text,
-                      cursor: 'pointer',
-                      fontSize: 12
-                    }}
-                  >
-                    📊 {language === 'ar' ? 'إحصائيات' : 'Analytics'}
-                  </button>
-                </div>
               </div>
 
               <DataTable
@@ -1060,7 +1080,7 @@ function AdminDashboard({ language = 'ar' }) {
           )}
 
           {/* Other tabs placeholder */}
-          {!['dashboard', 'merchants', 'deals'].includes(activeTab) && (
+          {!['dashboard', 'categories', 'merchants', 'deals'].includes(activeTab) && (
             <div style={{
               background: THEME.colors.surface,
               borderRadius: THEME.radius.lg,
@@ -1102,15 +1122,14 @@ function AdminLogin({ onLogin, language = 'ar' }) {
     setError('')
 
     try {
-      // Simulate login
-      if (email === 'admin@qreeb.qa' && password === '123456') {
-        localStorage.setItem('qreeb_admin_session', JSON.stringify({
+      if (email === 'admin@wejha.qa' && password === '123456') {
+        localStorage.setItem('wejha_admin_session', JSON.stringify({
           email,
           role: 'super_admin',
-          name: 'مشرف قريب',
+          name: 'مشرف وِجهة',
           loginTime: new Date().toISOString()
         }))
-        onLogin({ email, role: 'super_admin', name: 'مشرف قريب' })
+        onLogin({ email, role: 'super_admin', name: 'مشرف وِجهة' })
       } else {
         setError(language === 'ar' ? 'بيانات الدخول غير صحيحة' : 'Invalid credentials')
       }
@@ -1139,7 +1158,6 @@ function AdminLogin({ onLogin, language = 'ar' }) {
         border: `1px solid ${THEME.colors.border}`,
         boxShadow: THEME.shadows.lg
       }}>
-        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{
             width: 64,
@@ -1162,7 +1180,7 @@ function AdminLogin({ onLogin, language = 'ar' }) {
             marginBottom: 8,
             fontFamily: "'Tajawal', sans-serif"
           }}>
-            {language === 'ar' ? 'لوحة تحكم قريب' : 'Qreeb Admin'}
+            {language === 'ar' ? 'لوحة تحكم وِجهة' : 'Wejha Admin'}
           </h1>
           
           <p style={{
@@ -1173,7 +1191,6 @@ function AdminLogin({ onLogin, language = 'ar' }) {
           </p>
         </div>
 
-        {/* Demo Credentials */}
         <div style={{
           background: `${THEME.colors.info}15`,
           border: `1px solid ${THEME.colors.info}30`,
@@ -1185,11 +1202,10 @@ function AdminLogin({ onLogin, language = 'ar' }) {
             {language === 'ar' ? 'بيانات التجربة:' : 'Demo Credentials:'}
           </div>
           <div style={{ fontSize: 11, color: THEME.colors.text, fontFamily: 'monospace' }}>
-            admin@qreeb.qa / 123456
+            admin@wejha.qa / 123456
           </div>
         </div>
 
-        {/* Email Input */}
         <div style={{ marginBottom: 16 }}>
           <label style={{
             display: 'block',
@@ -1213,15 +1229,11 @@ function AdminLogin({ onLogin, language = 'ar' }) {
               background: THEME.colors.card,
               color: THEME.colors.text,
               fontSize: 14,
-              outline: 'none',
-              transition: 'border-color 0.2s'
+              outline: 'none'
             }}
-            onFocus={(e) => e.target.style.borderColor = THEME.colors.primary}
-            onBlur={(e) => e.target.style.borderColor = THEME.colors.border}
           />
         </div>
 
-        {/* Password Input */}
         <div style={{ marginBottom: 20 }}>
           <label style={{
             display: 'block',
@@ -1245,15 +1257,11 @@ function AdminLogin({ onLogin, language = 'ar' }) {
               background: THEME.colors.card,
               color: THEME.colors.text,
               fontSize: 14,
-              outline: 'none',
-              transition: 'border-color 0.2s'
+              outline: 'none'
             }}
-            onFocus={(e) => e.target.style.borderColor = THEME.colors.primary}
-            onBlur={(e) => e.target.style.borderColor = THEME.colors.border}
           />
         </div>
 
-        {/* Error Message */}
         {error && (
           <div style={{
             color: THEME.colors.error,
@@ -1261,14 +1269,12 @@ function AdminLogin({ onLogin, language = 'ar' }) {
             marginBottom: 16,
             padding: '8px 12px',
             background: `${THEME.colors.error}15`,
-            borderRadius: THEME.radius.sm,
-            border: `1px solid ${THEME.colors.error}30`
+            borderRadius: THEME.radius.sm
           }}>
             {error}
           </div>
         )}
 
-        {/* Login Button */}
         <button
           type="submit"
           disabled={loading}
@@ -1281,32 +1287,10 @@ function AdminLogin({ onLogin, language = 'ar' }) {
             color: 'white',
             fontSize: 15,
             fontWeight: 700,
-            cursor: loading ? 'not-allowed' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            transition: 'all 0.2s'
+            cursor: loading ? 'not-allowed' : 'pointer'
           }}
         >
-          {loading ? (
-            <>
-              <div style={{
-                width: 16,
-                height: 16,
-                border: '2px solid #ffffff33',
-                borderTopColor: '#ffffff',
-                borderRadius: '50%',
-                animation: 'spin 0.8s linear infinite'
-              }} />
-              <span>{language === 'ar' ? 'جاري الدخول...' : 'Logging in...'}</span>
-            </>
-          ) : (
-            <>
-              <span>🔑</span>
-              <span>{language === 'ar' ? 'دخول' : 'Login'}</span>
-            </>
-          )}
+          {loading ? 'جاري الدخول...' : 'دخول'}
         </button>
       </form>
     </div>
@@ -1320,27 +1304,21 @@ function AdminLogin({ onLogin, language = 'ar' }) {
 export default function AdminApp({ language = 'ar' }) {
   const [user, setUser] = useState(null)
 
-  // Check for existing admin session
   useEffect(() => {
-    const savedSession = localStorage.getItem('qreeb_admin_session')
+    const savedSession = localStorage.getItem('wejha_admin_session')
     if (savedSession) {
       try {
         const session = JSON.parse(savedSession)
         setUser(session)
       } catch (error) {
         console.error('Invalid admin session:', error)
-        localStorage.removeItem('qreeb_admin_session')
+        localStorage.removeItem('wejha_admin_session')
       }
     }
   }, [])
 
   const handleLogin = (userData) => {
     setUser(userData)
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('qreeb_admin_session')
-    setUser(null)
   }
 
   if (!user) {
