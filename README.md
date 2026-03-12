@@ -338,3 +338,4 @@ SOFTWARE.
   <h3>قريب - اكتشف العروض القريبة منك</h3>
   <p>Qreeb - Discover deals near you</p>
 </div>
+// Service key connected
