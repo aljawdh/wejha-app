@@ -1,36 +1,119 @@
 {
-  "name": "وِجهة — عروض قطر",
-  "short_name": "وِجهة",
-  "description": "كوبونات وعروض حصرية للمطاعم والمقاهي والمتاجر في قطر",
+  "name": "قريب - Qreeb",
+  "short_name": "قريب",
+  "description": "اكتشف العروض والكوبونات القريبة منك في دولة قطر",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#06090F",
-  "theme_color": "#7C1D2E",
-  "orientation": "portrait",
+  "background_color": "#080608",
+  "theme_color": "#8B1F24",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "lang": "ar",
   "dir": "rtl",
-  "icons": [
-    {
-      "src": "/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
+  "categories": ["shopping", "lifestyle", "food"],
   "screenshots": [
     {
-      "src": "/screenshots/home.png",
+      "src": "/screenshot-mobile.png",
       "sizes": "390x844",
       "type": "image/png",
-      "form_factor": "narrow"
+      "platform": "mobile",
+      "label": "قريب - الشاشة الرئيسية"
+    },
+    {
+      "src": "/screenshot-desktop.png", 
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "قريب - النسخة المكتبية"
     }
   ],
-  "categories": ["lifestyle", "shopping"],
-  "prefer_related_applications": false
+  "icons": [
+    {
+      "src": "/icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-96x96.png",
+      "sizes": "96x96", 
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png", 
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512x512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "عروض اليوم",
+      "short_name": "عروض اليوم", 
+      "description": "شاهد أحدث العروض والخصومات",
+      "url": "/?tab=deals",
+      "icons": [{ "src": "/icons/deals-shortcut.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "كوبوناتي", 
+      "short_name": "كوبوناتي",
+      "description": "محفظة كوبوناتك الشخصية",
+      "url": "/?tab=wallet", 
+      "icons": [{ "src": "/icons/wallet-shortcut.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "حسابي",
+      "short_name": "حسابي",
+      "description": "إعدادات الحساب الشخصي", 
+      "url": "/?tab=profile",
+      "icons": [{ "src": "/icons/profile-shortcut.png", "sizes": "96x96" }]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "itunes",
+      "url": "https://apps.apple.com/qa/app/qreeb/id123456789",
+      "id": "123456789"
+    },
+    {
+      "platform": "play", 
+      "url": "https://play.google.com/store/apps/details?id=qa.qreeb.app",
+      "id": "qa.qreeb.app"
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }
