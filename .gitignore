@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build
+.next/
+out/
+
+# Environment - NEVER commit
+.env
+.env.local
+.env.*.local
+
+# Vercel
+.vercel
+
+# System
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Mobile
+ios/
+android/
