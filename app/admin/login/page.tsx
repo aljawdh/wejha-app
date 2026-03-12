@@ -34,6 +34,8 @@ const err = (email === "admin@wejha.qa" && password === "123456") ? null : "خط
       setError('بيانات الدخول غير صحيحة أو ليس لديك صلاحية')
       setLoading(false)
     } else {
+      localStorage.setItem('wejha_role', 'admin')
+localStorage.setItem('wejha_admin_name', 'مشرف وِجهة')
       const role = localStorage.getItem('wejha_role') || 'admin'
       router.push(ROLE_ROUTES[role] || '/admin')
     }
